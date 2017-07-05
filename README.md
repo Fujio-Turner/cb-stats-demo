@@ -2,7 +2,7 @@
 Mine Couchbase Server Status to a Log
 
 
-CONFIGURATION
+**CONFIGURATION**
 open the config.json file and update your settings.
 
 {
@@ -15,12 +15,12 @@ open the config.json file and update your settings.
 "secure":false
 }
 
-RUNNING
+**RUNNING**
 Insert into your cron tab 
 * * * * * /usr/bin/python /path/to/cb-stats-demo/cb-stats-demo.py
 
 
-FAQ
+**FAQ**
 Q:How big will the files/log get?
 A:It will roughly get about 900KB per minute per bucket per server or about 1.1GB per day per bucket per server
 
