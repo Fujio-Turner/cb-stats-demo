@@ -8,6 +8,7 @@ This script lets you capture those metrics and put them into a log.
 **CONFIGURATION** 
 
 Open the config.json file and update your settings.
+```javascript
 
 {
 "hostname":"127.0.0.1",   (Put in you hostname or ip of the machine it getting the stats from)
@@ -18,12 +19,13 @@ Open the config.json file and update your settings.
 "port":"8091",
 "secure":false
 }
-
+```
 **RUNNING**
 
 Insert into your cron tab 
+```
 * * * * * /usr/bin/python /path/to/cb-stats-demo/cb-stats-demo.py
-
+```
 
 **FAQ**
 
