@@ -1,1 +1,14 @@
-logs go here
+.....
+2017-07-04 22:36:55 cb=travel-sample cas_hits=0
+2017-07-04 22:36:56 cb=travel-sample cas_hits=0
+2017-07-04 22:36:57 cb=travel-sample cas_hits=0
+2017-07-04 22:36:58 cb=travel-sample cas_hits=0
+2017-07-04 22:36:59 cb=travel-sample cas_hits=0
+2017-07-04 22:37:00 cb=travel-sample cas_hits=0
+2017-07-04 22:36:01 cb=sys curr_connections=25
+2017-07-04 22:36:02 cb=sys curr_connections=25
+2017-07-04 22:36:03 cb=sys curr_connections=25
+2017-07-04 22:36:04 cb=sys curr_connections=25
+2017-07-04 22:36:05 cb=sys curr_connections=25
+2017-07-04 22:36:06 cb=sys curr_connections=25
+.....
