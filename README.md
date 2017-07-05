@@ -35,7 +35,7 @@ A: No, it is bound to a particular day. Example 2016-06-17_cbstats.txt will only
 
 Q:How do get rid of the logs that are XYZ days old?
 A:Linux has a built in log rotation tool on the folder level. https://www.cyberciti.biz/faq/how-do-i-rotate-log-files/
-In the future I'll come up with a built-in on.
+In the future I'll come up with a built-in one.
 
 Q:Where does it collect the metrics from?
 A:Couchbase Server has a REST end point on #{hostname}:8091/pools/default/buckets/{bucket-name}/nodes/{hostname}:8091/stats
