@@ -11,7 +11,7 @@ Open the config.json file and update your settings.
 ```javascript
 
 {
-"hostname":"127.0.0.1",   (Put in you hostname or ip of the machine it getting the stats from)
+"hostname":"127.0.0.1",   (Put in your hostname or ip of the machine it getting the stats from)
 "username":"readOnly",    (Put in the read-only username)
 "password":"password",    (Put in the read-only password)
 "path":"/your/log/path/to/cb-stats-demo/logs/",
