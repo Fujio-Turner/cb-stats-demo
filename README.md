@@ -5,6 +5,9 @@ Couchbase Server has great admin UI with lots of great metrics.
 This script lets you capture those metrics and put them into a log.
 
 
+![alt text](https://github.com/Fujio-Turner/cb-stats-demo/blob/master/Screen%20Shot%202017-07-05%20at%2011.58.16%20AM.png)
+
+
 **CONFIGURATION** 
 
 Open the config.json file and update your settings.
