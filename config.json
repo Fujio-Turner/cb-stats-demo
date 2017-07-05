@@ -1,0 +1,9 @@
+{
+"hostname":"127.0.0.1",
+"username":"readOnly",
+"password":"password",
+"path":"/your/log/path/to/cb-stats-demo/logs/",
+"debug":false,
+"port":"8091",
+"secure":false
+}
