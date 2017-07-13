@@ -6,9 +6,8 @@ class CBSTATSPULLER:
 
 	hostname = '127.0.0.1'
 	port = '8091'
-	nodePort = '8091'
 	debug = False
-	username = "Administrator"
+	username = "read-only"
 	password = "password"
 	logPath = "/tmp/logs/"
 	oneTimeLog = {"cpu_idle_ms","cpu_local_ms","cpu_utilization_rate","curr_connections","mem_used_sys","mem_total","mem_free","mem_actual_free","swap_used","swap_total","hibernated_requests","hibernated_waked","rest_requests"}
@@ -137,22 +136,23 @@ class CBSTATSPULLER:
 			timeStamp = x["stats"][bucketName]["timestamp"]
 			unixTodt_trim = []
 			for y in timeStamp:
-				unixTodt_trim.append(self.unixToDt(y/1000)) #I have to trim the time and convert to human readable
+				unixTodt_trim.append(self.unixToDt(y/1000)) #I have to trim the time and convert to human readable DT
 			
 			if self.debug == True:
 				print("DEBUG: unix to DT conversion ",unixTodt_trim)
 
 			x["stats"][bucketName].pop("timestamp") #removes the field timestamp
 			
+			#kV & SYSTEM
 			for key1, value1 in x["stats"][bucketName].items():
 					timeLoop2 = 0
-					for z in value1:
+					for a in value1:
 						whatBucket = x["bucket"]
 						if key1 in self.oneTimeLog and timeLoop1 == 0:
 							whatBucket = 'sys'  # only do system level logging once
 						elif key1 in self.oneTimeLog and timeLoop1 > 0:
 							continue
-						log_string = str(unixTodt_trim[timeLoop2]) + " cb="+whatBucket+" " + str(key1)+"="+str(z) + '\n'
+						log_string = str(unixTodt_trim[timeLoop2]) + " cb="+whatBucket+" " + str(key1)+"="+str(a) + '\n'
 						timeLoop2 = timeLoop2 + 1
 						fullLogString = fullLogString +log_string
 					else:
@@ -163,13 +163,13 @@ class CBSTATSPULLER:
 				x["stats"]["@query"].pop("timestamp")
 				for key2, value2 in x["stats"]["@query"].items():
 						timeLoop3 = 0
-						for zz in value2:
+						for b in value2:
 							whatBucket = x["bucket"]
 							if key2 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key2 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop3]) + " cb="+whatBucket+" " + str(key2)+"="+str(zz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop3]) + " cb="+whatBucket+" " + str(key2)+"="+str(b) + '\n'
 							timeLoop3 = timeLoop3 + 1
 							fullLogString = fullLogString +log_string
 						else:
@@ -180,13 +180,13 @@ class CBSTATSPULLER:
 				x["stats"]["@fts"].pop("timestamp")
 				for key3, value3 in x["stats"]["@fts"].items(): 
 						timeLoop4 = 0
-						for zzz in value3:
+						for c in value3:
 							whatBucket = x["bucket"]
 							if key3 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key3 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop4]) + " cb="+whatBucket+" " + str(key3)+"="+str(zzz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop4]) + " cb="+whatBucket+" " + str(key3)+"="+str(c) + '\n'
 							timeLoop4 = timeLoop4 + 1
 							fullLogString = fullLogString +log_string
 						else:
@@ -196,13 +196,13 @@ class CBSTATSPULLER:
 				x["stats"]["@index"].pop("timestamp")
 				for key4, value4 in x["stats"]["@index"].items(): 
 						timeLoop5 = 0
-						for zzzz in value4:
+						for d in value4:
 							whatBucket = x["bucket"]
 							if key4 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key4 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop5]) + " cb="+whatBucket+" " + str(key4)+"="+str(zzzz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop5]) + " cb="+whatBucket+" " + str(key4)+"="+str(d) + '\n'
 							timeLoop5 = timeLoop5 + 1
 							fullLogString = fullLogString +log_string
 						else:
@@ -212,13 +212,13 @@ class CBSTATSPULLER:
 				x["stats"]["@index-"+bucketName].pop("timestamp")
 				for key5, value5 in x["stats"]["@index-"+bucketName].items(): 
 						timeLoop6 = 0
-						for zzzzz in value5:
+						for e in value5:
 							whatBucket = x["bucket"]
 							if key5 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key5 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop6]) + " cb="+whatBucket+" " + str(key5)+"="+str(zzzzz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop6]) + " cb="+whatBucket+" " + str(key5)+"="+str(e) + '\n'
 							timeLoop6 = timeLoop6 + 1
 							fullLogString = fullLogString +log_string
 						else:
@@ -228,29 +228,29 @@ class CBSTATSPULLER:
 				x["stats"]["@xdcr-"+bucketName].pop("timestamp")
 				for key6, value6 in x["stats"]["@xdcr-"+bucketName].items(): 
 						timeLoop7 = 0
-						for zzzzzz in value6:
+						for f in value6:
 							whatBucket = x["bucket"]
 							if key6 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key6 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop7]) + " cb="+whatBucket+" " + str(key6)+"="+str(zzzzzz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop7]) + " cb="+whatBucket+" " + str(key6)+"="+str(f) + '\n'
 							timeLoop7 = timeLoop7 + 1
 							fullLogString = fullLogString +log_string
 						else:
 							timeLoop7 = 0
-			#XDCR FOR BUCKET
+			#FTS FOR BUCKET
 			if "@fts-"+bucketName in  x["stats"]:
 				x["stats"]["@fts-"+bucketName].pop("timestamp")
 				for key7, value7 in x["stats"]["@fts-"+bucketName].items(): 
 						timeLoop8 = 0
-						for zzzzzzz in value7:
+						for g in value7:
 							whatBucket = x["bucket"]
 							if key7 in self.oneTimeLog and timeLoop1 == 0:
 								whatBucket = 'sys'  # only do system level logging once
 							elif key7 in self.oneTimeLog and timeLoop1 > 0:
 								continue
-							log_string = str(unixTodt_trim[timeLoop8]) + " cb="+whatBucket+" " + str(key7)+"="+str(zzzzzzz) + '\n'
+							log_string = str(unixTodt_trim[timeLoop8]) + " cb="+whatBucket+" " + str(key7)+"="+str(g) + '\n'
 							timeLoop8 = timeLoop8 + 1
 							fullLogString = fullLogString +log_string
 						else:

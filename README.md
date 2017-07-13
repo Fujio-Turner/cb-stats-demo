@@ -30,6 +30,11 @@ Insert into your cron tab
 * * * * * /usr/bin/python /path/to/cb-stats-demo/cb-stats-demo.py
 ```
 
+**LOGS**
+
+
+
+
 **FAQ**
 
 Q:How big will the files/log get?

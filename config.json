@@ -2,7 +2,7 @@
 "hostname":"127.0.0.1",
 "username":"read-only",
 "password":"password",
-"path":"/your/log/path/to/cb-stats-demo/logs/",
+"path":"/Users/fujio.turner/Documents/",
 "debug":false,
 "port":"8091",
 "secure":false
