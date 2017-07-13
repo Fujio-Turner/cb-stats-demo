@@ -34,7 +34,7 @@ Insert into your cron tab
 
 Q:How big will the files/log get?
 
-A:It will roughly get about 900KB per minute per bucket per server or about 1.1GB per day per bucket per server.
+A:It will roughly get about 750KB per minute per bucket per server or about 0.8GB per day per bucket per server.
 
 
 Q:Will the file size grow forever?
@@ -50,7 +50,7 @@ In the future I'll come up with a built-in one.
 
 Q:Where does the script collect the metrics from?
 
-A:Couchbase Server has a REST end point on #http://{hostname}:8091/pools/default/buckets/{bucket-name}/nodes/{hostname}:8091/stats
+A:Couchbase Server has a REST end point on #http://{hostname}:8091/_uistats
 which spits out a JSON with all the metrics per node per bucket for the last 60 seconds.
 
 
