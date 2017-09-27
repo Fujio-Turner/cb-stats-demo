@@ -4,9 +4,7 @@ Mine Couchbase Server Status to a Log
 Couchbase Server has great admin UI with lots of great metrics.
 This script lets you capture those metrics and put them into a log.
 
-
-![alt text](https://github.com/Fujio-Turner/cb-stats-demo/blob/master/img/cb-stats-work.png?raw=true)
-
+<img src="img/cb-stats-work.png">
 
 **CONFIGURATION** 
 
@@ -32,11 +30,9 @@ Insert into your cron tab
 
 **LOGS**
 
-![alt text](https://github.com/Fujio-Turner/cb-stats-demo/blob/master/img/cb-stats-sys-data.png?raw=true)
+<img src="img/cb-stats-sys-data.png">
 
-
-![alt text](https://github.com/Fujio-Turner/cb-stats-demo/blob/master/img/cb-stats-bucket-data.png?raw=true)
-
+<img src="img/cb-stats-bucket-data.png">
 **FAQ**
 
 Q:How big will the files/log get?
