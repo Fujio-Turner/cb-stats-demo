@@ -1,6 +1,6 @@
 {
 "hostname":"127.0.0.1",
-"username":"read-only",
+"username":"Administrator",
 "password":"password",
 "path":"/Users/fujio.turner/Documents/",
 "debug":false,
