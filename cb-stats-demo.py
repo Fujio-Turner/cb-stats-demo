@@ -5,7 +5,45 @@ import time
 import datetime
 import base64
 import os
+import cProfile
+import pstats
+import io
+
 # import sys
+
+'''
+def profile(fnc):
+    
+    """A decorator that uses cProfile to profile a function"""
+    
+    def inner(*args, **kwargs):
+        
+        pr = cProfile.Profile()
+        pr.enable()
+        retval = fnc(*args, **kwargs)
+        pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
+        return retval
+
+    return inner
+
+
+def profile(func):
+    def profiled_func(*args, **kwargs):
+        profile = cProfile.Profile()
+        try:
+            profile.enable()
+            result = func(*args, **kwargs)
+            profile.disable()
+            return result
+        finally:
+            profile.print_stats()
+    return profiled_func
+'''
 
 class CBSTATSPULLER():
     hostname = '127.0.0.1'
@@ -14,7 +52,7 @@ class CBSTATSPULLER():
     username = "read-only"
     password = "password"
     logPath = "/tmp/logs/"
-    oneTimeLog = ["cpu_idle_ms","cpu_local_ms","cpu_utilization_rate","curr_connections","mem_used_sys","mem_total","mem_free","mem_actual_free","swap_used","swap_total","hibernated_requests","hibernated_waked","rest_requests"]
+    oneTimeLog = ["cpu_idle_ms","cpu_local_ms","cpu_utilization_rate","curr_connections","mem_used_sys","mem_total","mem_free","mem_actual_free","mem_actual_used","swap_used","swap_total","hibernated_requests","hibernated_waked","rest_requests"]
     logElements = {"query":True,"index":True,"kv":True,"xdcr":True,"sys":True,"fts":True,"eventing":True,"analytics":True}
 
     def __init__(self, config):
@@ -132,9 +170,11 @@ class CBSTATSPULLER():
             dataFull.append(data)
         return dataFull
 
+    #@profile
     def makeLog(self):
         data = self.pullCbStatus()
         fullLogString = ""
+        timeLoop1curr = 0
         timeLoop1 = 0
         for x in data:
             bucketName = x["bucket"]
@@ -149,7 +189,7 @@ class CBSTATSPULLER():
 
             x["stats"][bucketName].pop("timestamp")  # removes the field timestamp
 
-            # kV & SYSTEM
+            # kV
             for key1, value1 in x["stats"][bucketName].items():
                 timeLoop2 = 0
                 for a in value1:
@@ -165,122 +205,123 @@ class CBSTATSPULLER():
                 else:
                     timeLoop2 = 0
 
+            # System
+            if self.logElements["sys"] == True:
+                if "@system" in x["stats"]:
+                    x["stats"]["@system"].pop("timestamp")
+                    for key2, value2 in x["stats"]["@system"].items():
+                        timeLoop3 = 0
+                        for b in value2:
+                            whatBucket = 'sys'
+                            if key2 in self.oneTimeLog and timeLoop1 == 0:
+                                whatBucket = 'sys'  # only do system level logging once
+                                log_string = str(unixTodt_trim[timeLoop3]) + " cb=" + whatBucket + " " + str(key2) + "=" + str(
+                                b) + '\n'
+                                timeLoop3 = timeLoop3 + 1
+                                fullLogString = fullLogString + log_string
+                            elif key2 in self.oneTimeLog and timeLoop1 > 0:
+                                continue
+                        else:
+                            timeLoop3 = 0
+
             # QUERY
             if self.logElements["query"] == True:
                 if "@query" in x["stats"]:
                     x["stats"]["@query"].pop("timestamp")
-                    for key2, value2 in x["stats"]["@query"].items():
-                        timeLoop3 = 0
-                        for b in value2:
-                            whatBucket = x["bucket"]
-                            if key2 in self.oneTimeLog and timeLoop1 == 0:
-                                whatBucket = 'sys'  # only do system level logging once
-                            elif key2 in self.oneTimeLog and timeLoop1 > 0:
-                                continue
-                            log_string = str(unixTodt_trim[timeLoop3]) + " cb=" + whatBucket + " " + str(key2) + "=" + str(
-                                b) + '\n'
-                            timeLoop3 = timeLoop3 + 1
-                            fullLogString = fullLogString + log_string
-                        else:
-                            timeLoop3 = 0
-
-            # FTS
-            if self.logElements["fts"] == True:
-                if "@fts" in x["stats"]:
-                    x["stats"]["@fts"].pop("timestamp")
-                    for key3, value3 in x["stats"]["@fts"].items():
+                    for key3, value2 in x["stats"]["@query"].items():
                         timeLoop4 = 0
-                        for c in value3:
+                        for b in value2:
                             whatBucket = x["bucket"]
                             if key3 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
                             elif key3 in self.oneTimeLog and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop4]) + " cb=" + whatBucket + " " + str(key3) + "=" + str(
-                                c) + '\n'
+                                b) + '\n'
                             timeLoop4 = timeLoop4 + 1
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop4 = 0
-            # INDEX
-            if self.logElements["index"] == True:
-                if "@index" in x["stats"]:
-                    x["stats"]["@index"].pop("timestamp")
-                    for key4, value4 in x["stats"]["@index"].items():
+
+            # FTS
+            if self.logElements["fts"] == True:
+                if "@fts" in x["stats"]:
+                    x["stats"]["@fts"].pop("timestamp")
+                    for key4, value3 in x["stats"]["@fts"].items():
                         timeLoop5 = 0
-                        for d in value4:
+                        for c in value3:
                             whatBucket = x["bucket"]
-                            if key4 in self.oneTimeLog and timeLoop1 == 0:
+                            if key3 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key4 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key3 in self.oneTimeLog and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop5]) + " cb=" + whatBucket + " " + str(key4) + "=" + str(
-                                d) + '\n'
+                                c) + '\n'
                             timeLoop5 = timeLoop5 + 1
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop5 = 0
-            # INDEX FOR BUCKET
+            # INDEX
             if self.logElements["index"] == True:
-                if "@index-" + bucketName in x["stats"]:
-                    x["stats"]["@index-" + bucketName].pop("timestamp")
-                    for key5, value5 in x["stats"]["@index-" + bucketName].items():
+                if "@index" in x["stats"]:
+                    x["stats"]["@index"].pop("timestamp")
+                    for key5, value4 in x["stats"]["@index"].items():
                         timeLoop6 = 0
-                        for e in value5:
+                        for d in value4:
                             whatBucket = x["bucket"]
                             if key5 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
                             elif key5 in self.oneTimeLog and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop6]) + " cb=" + whatBucket + " " + str(key5) + "=" + str(
-                                e) + '\n'
+                                d) + '\n'
                             timeLoop6 = timeLoop6 + 1
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop6 = 0
-            # XDCR FOR BUCKET
-            if self.logElements["xdcr"] == True:
-                if "@xdcr-" + bucketName in x["stats"]:
-                    x["stats"]["@xdcr-" + bucketName].pop("timestamp")
-                    for key6, value6 in x["stats"]["@xdcr-" + bucketName].items():
+            # INDEX FOR BUCKET
+            if self.logElements["index"] == True:
+                if "@index-" + bucketName in x["stats"]:
+                    x["stats"]["@index-" + bucketName].pop("timestamp")
+                    for key6, value5 in x["stats"]["@index-" + bucketName].items():
                         timeLoop7 = 0
-                        for f in value6:
+                        for e in value5:
                             whatBucket = x["bucket"]
                             if key6 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
                             elif key6 in self.oneTimeLog and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop7]) + " cb=" + whatBucket + " " + str(key6) + "=" + str(
-                                f) + '\n'
+                                e) + '\n'
                             timeLoop7 = timeLoop7 + 1
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop7 = 0
-            # FTS FOR BUCKET
-            if self.logElements["fts"] == True:
-                if "@fts-" + bucketName in x["stats"]:
-                    x["stats"]["@fts-" + bucketName].pop("timestamp")
-                    for key7, value7 in x["stats"]["@fts-" + bucketName].items():
+            # XDCR FOR BUCKET
+            if self.logElements["xdcr"] == True:
+                if "@xdcr-" + bucketName in x["stats"]:
+                    x["stats"]["@xdcr-" + bucketName].pop("timestamp")
+                    for key7, value6 in x["stats"]["@xdcr-" + bucketName].items():
                         timeLoop8 = 0
-                        for g in value7:
+                        for f in value6:
                             whatBucket = x["bucket"]
-                            if key7 in self.oneTimeLog and timeLoop1 == 0:
+                            if key6 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key7 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key6 in self.oneTimeLog and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop8]) + " cb=" + whatBucket + " " + str(key7) + "=" + str(
-                                g) + '\n'
+                                f) + '\n'
                             timeLoop8 = timeLoop8 + 1
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop8 = 0
-            # Eventing FOR BUCKET
-            if self.logElements["eventing"] == True:
-                if "@eventing" in x["stats"]:
-                    x["stats"]["@eventing"].pop("timestamp")
-                    for key8, value8 in x["stats"]["@eventing"].items():
+            # FTS FOR BUCKET
+            if self.logElements["fts"] == True:
+                if "@fts-" + bucketName in x["stats"]:
+                    x["stats"]["@fts-" + bucketName].pop("timestamp")
+                    for key8, value7 in x["stats"]["@fts-" + bucketName].items():
                         timeLoop9 = 0
-                        for g in value8:
+                        for g in value7:
                             whatBucket = x["bucket"]
                             if key8 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
@@ -291,15 +332,14 @@ class CBSTATSPULLER():
                             timeLoop9 = timeLoop9 + 1
                             fullLogString = fullLogString + log_string
                         else:
-                            timeLoop8 = 0
-
-            # Analytics FOR BUCKET
-            if self.logElements["analytics"] == True:
-                if "@cbas-" + bucketName in x["stats"]:
-                    x["stats"]["@cbas-" + bucketName].pop("timestamp")
-                    for key9, value9 in x["stats"]["@cbas-" + bucketName].items():
+                            timeLoop9 = 0
+            # Eventing FOR BUCKET
+            if self.logElements["eventing"] == True:
+                if "@eventing" in x["stats"]:
+                    x["stats"]["@eventing"].pop("timestamp")
+                    for key9, value8 in x["stats"]["@eventing"].items():
                         timeLoop10 = 0
-                        for g in value9:
+                        for g in value8:
                             whatBucket = x["bucket"]
                             if key9 in self.oneTimeLog and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
@@ -310,7 +350,26 @@ class CBSTATSPULLER():
                             timeLoop10 = timeLoop10 + 1
                             fullLogString = fullLogString + log_string
                         else:
-                            timeLoop8 = 0
+                            timeLoop10 = 0
+
+            # Analytics FOR BUCKET
+            if self.logElements["analytics"] == True:
+                if "@cbas-" + bucketName in x["stats"]:
+                    x["stats"]["@cbas-" + bucketName].pop("timestamp")
+                    for key10, value9 in x["stats"]["@cbas-" + bucketName].items():
+                        timeLoop11 = 0
+                        for g in value9:
+                            whatBucket = x["bucket"]
+                            if key10 in self.oneTimeLog and timeLoop1 == 0:
+                                whatBucket = 'sys'  # only do system level logging once
+                            elif key10 in self.oneTimeLog and timeLoop1 > 0:
+                                continue
+                            log_string = str(unixTodt_trim[timeLoop11]) + " cb=" + whatBucket + " " + str(key10) + "=" + str(
+                                g) + '\n'
+                            timeLoop11 = timeLoop11 + 1
+                            fullLogString = fullLogString + log_string
+                        else:
+                            timeLoop11 = 0
             timeLoop1 = 1
         self.writeLog(fullLogString)
         return True

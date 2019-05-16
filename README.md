@@ -65,3 +65,6 @@ A:No Couchbase lets you create a Read-Only user with username and password that 
 Q:Can I collect all the stats for the whole cluster on one machine?
 
 Q:You can, but its best to run the script on each machine to capture its local stats and have a logging agent consume the logs and send them to a third party tool.
+
+
+Compatability: Couchbase Admin GUI System stats ,example CPU, is now treated in the admin gui as a CB service with the data been as "@system" much like @analytics @query . If you have an older version of CB 4.x or older please pull/download the branch  cb/4.x.
