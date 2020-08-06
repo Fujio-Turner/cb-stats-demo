@@ -15,7 +15,8 @@ Open the config.json file and update your settings.
 "hostname":"127.0.0.1",   (Put in your hostname or ip of the machine it getting the stats from)
 "username":"readOnly",    (Put in the read-only username)
 "password":"password",    (Put in the read-only password)
-"path":"/your/log/path/to/cb-stats-demo/logs/",
+"path":"/path/you/want/cb-stats-demo/to/write/output(log)/",
+"dtFormat":"%Y-%m-%d %H:%M:%S",
 "debug":false,
 "port":"8091",
 "secure":false
@@ -28,6 +29,11 @@ Insert into your cron tab
 * * * * * /usr/bin/python /path/to/cb-stats-demo/cb-stats-demo.py
 ```
 
+DateTime Output Format
+
+By default the DateTime format output looks like this: 2020-08-05 19:23:10  or [%Y-%m-%d %H:%M:%S].
+If you want the output a little different go here: https://strftime.org/ and update the config file "dtFormat":"here"
+
 **LOGS**
 
 <img src="img/cb-stats-sys-data.png">
@@ -37,7 +43,7 @@ Insert into your cron tab
 
 Q:How big will the files/log get?
 
-A:It will roughly get about 750KB per minute per bucket per server or about 0.8GB per day per bucket per server.
+A:It will roughly get about 750KB per minute per bucket per server or about 0.8GB per day per bucket per server. More CB servies your have running like: N1QL , Eventing, Analytic and ...etc will make the file bigger.
 
 
 Q:Will the file size grow forever?

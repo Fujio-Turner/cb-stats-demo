@@ -2,7 +2,8 @@
 "hostname":"127.0.0.1",
 "username":"Administrator",
 "password":"password",
-"path":"/Users/fujio.turner/Documents/",
+"path":"/Users/fujioturner/Documents/",
+"dtFormat":"%Y-%m-%d %H:%M:%S",
 "debug":false,
 "port":"8091",
 "secure":false

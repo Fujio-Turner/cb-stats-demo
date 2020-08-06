@@ -52,8 +52,14 @@ class CBSTATSPULLER():
     username = "read-only"
     password = "password"
     logPath = "/tmp/logs/"
-    oneTimeLog = ["cpu_idle_ms","cpu_local_ms","cpu_utilization_rate","curr_connections","mem_used_sys","mem_total","mem_free","mem_actual_free","mem_actual_used","swap_used","swap_total","hibernated_requests","hibernated_waked","rest_requests"]
-    logElements = {"query":True,"index":True,"kv":True,"xdcr":True,"sys":True,"fts":True,"eventing":True,"analytics":True}
+    defaultDtFormat = "%Y-%m-%d %H:%M:%S"
+    universalTimeFromCBSys = None
+    oneTimeLogSys = ["cpu_idle_ms","cpu_local_ms","cpu_utilization_rate","curr_connections","mem_used_sys","mem_total","mem_free","mem_actual_free","mem_actual_used","swap_used","swap_total","hibernated_requests","hibernated_waked","rest_requests"]
+    oneTimeLogIndex = ["index_ram_percent","index_memory_used","index_memory_quota","index_remaining_ram"]
+    oneTimeLogQuery = ["query_warnings","query_request_time","query_result_count","query_selects","query_requests_500ms","query_active_requests","query_requests_5000ms","query_requests_1000ms","query_invalid_requests","query_queued_requests","query_avg_svc_time","query_errors","query_requests","query_avg_response_size","query_result_size","query_avg_req_time","query_requests_250ms"]
+    oneTimeLogFts = ["fts_total_queries_rejected_by_herder","fts_curr_batches_blocked_by_herder","fts_num_bytes_used_ram"]
+    oneTimeLogAnalytics = ["cbas_disk_used","cbas_gc_time","cbas_thread_count","cbas_gc_count","cbas_heap_used","cbas_system_load_average"]
+    logElements = {"query":True,"index":True,"sys":False,"kv":True,"xdcr":True,"fts":True,"eventing":True,"analytics":True,"analytics4Bucket":True}
 
     def __init__(self, config):
         self.hostname = config["hostname"]
@@ -61,6 +67,7 @@ class CBSTATSPULLER():
         self.username = config["username"]
         self.password = config["password"]
         self.logPath = config["path"]
+        self.defaultDtFormat = config["dtFormat"]
         if config["secure"] == True:
             self.secure = "https"
         else:
@@ -100,7 +107,7 @@ class CBSTATSPULLER():
             return self.httpGet(url, retry + 1)
 
     def unixToDt(self, unix=''):
-        return datetime.datetime.fromtimestamp(int(unix)).strftime('%Y-%m-%d %H:%M:%S')
+        return datetime.datetime.fromtimestamp(int(unix)).strftime(self.defaultDtFormat)
 
     def jsonChecker(self, data=''):
         # checks if its good json and if so return back Python Dictionary
@@ -137,7 +144,6 @@ class CBSTATSPULLER():
 
         if bucketsList == False:
             exit()
-
         bucket = []
         nodes = []
         data = {}
@@ -177,8 +183,9 @@ class CBSTATSPULLER():
         timeLoop1curr = 0
         timeLoop1 = 0
         for x in data:
-            bucketName = x["bucket"]
-            timeStamp = x["stats"][bucketName]["timestamp"]
+            bucketName = str(x["bucket"])
+            timeStamp = x["stats"]["@system"]["timestamp"]
+            self.universalTimeFromCBSys = timeStamp
             unixTodt_trim = []
             for y in timeStamp:
                 unixTodt_trim.append(
@@ -187,23 +194,27 @@ class CBSTATSPULLER():
             if self.debug == True:
                 print("DEBUG: unix to DT conversion ", unixTodt_trim)
 
-            x["stats"][bucketName].pop("timestamp")  # removes the field timestamp
+            x["stats"]["@system"].pop("timestamp")  # removes the field timestamp 
 
             # kV
-            for key1, value1 in x["stats"][bucketName].items():
-                timeLoop2 = 0
-                for a in value1:
-                    whatBucket = x["bucket"]
-                    if key1 in self.oneTimeLog and timeLoop1 == 0:
-                        whatBucket = 'sys'  # only do system level logging once
-                    elif key1 in self.oneTimeLog and timeLoop1 > 0:
-                        continue
-                    log_string = str(unixTodt_trim[timeLoop2]) + " cb=" + whatBucket + " " + str(key1) + "=" + str(
-                        a) + '\n'
-                    timeLoop2 = timeLoop2 + 1
-                    fullLogString = fullLogString + log_string
-                else:
-                    timeLoop2 = 0
+            if self.logElements["kv"] == True:
+                kvBucketName = "@kv-" + bucketName
+                if kvBucketName in x["stats"]:
+                    x["stats"][kvBucketName].pop("timestamp")
+                    for key1, value1 in x["stats"][kvBucketName].items():
+                        timeLoop2 = 0
+                        for a in value1:
+                            whatBucket = x["bucket"]
+                            if key1 in self.oneTimeLogSys and timeLoop1 == 0:
+                                whatBucket = 'sys'  # only do system level logging once
+                            elif key1 in self.oneTimeLogSys and timeLoop1 > 0:
+                                continue
+                            log_string = str(unixTodt_trim[timeLoop2]) + " cb=" + whatBucket + " " + str(key1) + "=" + str(
+                                a) + '\n'
+                            timeLoop2 = timeLoop2 + 1
+                            fullLogString = fullLogString + log_string
+                        else:
+                            timeLoop2 = 0
 
             # System
             if self.logElements["sys"] == True:
@@ -213,13 +224,13 @@ class CBSTATSPULLER():
                         timeLoop3 = 0
                         for b in value2:
                             whatBucket = 'sys'
-                            if key2 in self.oneTimeLog and timeLoop1 == 0:
+                            if key2 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                                log_string = str(unixTodt_trim[timeLoop3]) + " cb=" + whatBucket + " " + str(key2) + "=" + str(
+                                log_string = str(unixTodt_trim[timeLoop3]) + " cb=sys " + str(key2) + "=" + str(
                                 b) + '\n'
                                 timeLoop3 = timeLoop3 + 1
                                 fullLogString = fullLogString + log_string
-                            elif key2 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key2 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                         else:
                             timeLoop3 = 0
@@ -232,14 +243,17 @@ class CBSTATSPULLER():
                         timeLoop4 = 0
                         for b in value2:
                             whatBucket = x["bucket"]
-                            if key3 in self.oneTimeLog and timeLoop1 == 0:
-                                whatBucket = 'sys'  # only do system level logging once
-                            elif key3 in self.oneTimeLog and timeLoop1 > 0:
+                            if key3 in self.oneTimeLogQuery and timeLoop1 == 0:
+                                if key3 in self.oneTimeLogSys and timeLoop1 == 0:
+                                    whatBucket = 'sys'  # only do system level logging once
+                                elif key3 in self.oneTimeLogSys and timeLoop1 > 0:
+                                    continue
+                                log_string = str(unixTodt_trim[timeLoop4]) + " cb=sys " + str(key3) + "=" + str(
+                                    b) + '\n'
+                                timeLoop4 = timeLoop4 + 1
+                                fullLogString = fullLogString + log_string
+                            elif key3 in self.oneTimeLogQuery and timeLoop1 > 0:
                                 continue
-                            log_string = str(unixTodt_trim[timeLoop4]) + " cb=" + whatBucket + " " + str(key3) + "=" + str(
-                                b) + '\n'
-                            timeLoop4 = timeLoop4 + 1
-                            fullLogString = fullLogString + log_string
                         else:
                             timeLoop4 = 0
 
@@ -251,14 +265,17 @@ class CBSTATSPULLER():
                         timeLoop5 = 0
                         for c in value3:
                             whatBucket = x["bucket"]
-                            if key3 in self.oneTimeLog and timeLoop1 == 0:
-                                whatBucket = 'sys'  # only do system level logging once
-                            elif key3 in self.oneTimeLog and timeLoop1 > 0:
+                            if key4 in self.oneTimeLogFts and timeLoop1 == 0:
+                                if key4 in self.oneTimeLogSys and timeLoop1 == 0:
+                                    whatBucket = 'sys'  # only do system level logging once
+                                elif key4 in self.oneTimeLogSys and timeLoop1 > 0:
+                                    continue
+                                log_string = str(unixTodt_trim[timeLoop5]) + " cb=sys " + str(key4) + "=" + str(
+                                    c) + '\n'
+                                timeLoop5 = timeLoop5 + 1
+                                fullLogString = fullLogString + log_string
+                            elif key4 in self.oneTimeLogFts and timeLoop1 > 0:
                                 continue
-                            log_string = str(unixTodt_trim[timeLoop5]) + " cb=" + whatBucket + " " + str(key4) + "=" + str(
-                                c) + '\n'
-                            timeLoop5 = timeLoop5 + 1
-                            fullLogString = fullLogString + log_string
                         else:
                             timeLoop5 = 0
             # INDEX
@@ -269,14 +286,17 @@ class CBSTATSPULLER():
                         timeLoop6 = 0
                         for d in value4:
                             whatBucket = x["bucket"]
-                            if key5 in self.oneTimeLog and timeLoop1 == 0:
-                                whatBucket = 'sys'  # only do system level logging once
-                            elif key5 in self.oneTimeLog and timeLoop1 > 0:
+                            if key5 in self.oneTimeLogIndex and timeLoop1 == 0:
+                                if key5 in self.oneTimeLogSys and timeLoop1 == 0:
+                                    whatBucket = 'sys'  # only do system level logging once
+                                elif key5 in self.oneTimeLogSys and timeLoop1 > 0:
+                                    continue
+                                log_string = str(unixTodt_trim[timeLoop6]) + " cb=sys " + str(key5) + "=" + str(
+                                    d) + '\n'
+                                timeLoop6 = timeLoop6 + 1
+                                fullLogString = fullLogString + log_string
+                            elif key5 in self.oneTimeLogIndex and timeLoop1 > 0:
                                 continue
-                            log_string = str(unixTodt_trim[timeLoop6]) + " cb=" + whatBucket + " " + str(key5) + "=" + str(
-                                d) + '\n'
-                            timeLoop6 = timeLoop6 + 1
-                            fullLogString = fullLogString + log_string
                         else:
                             timeLoop6 = 0
             # INDEX FOR BUCKET
@@ -287,9 +307,9 @@ class CBSTATSPULLER():
                         timeLoop7 = 0
                         for e in value5:
                             whatBucket = x["bucket"]
-                            if key6 in self.oneTimeLog and timeLoop1 == 0:
+                            if key6 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key6 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key6 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop7]) + " cb=" + whatBucket + " " + str(key6) + "=" + str(
                                 e) + '\n'
@@ -305,9 +325,9 @@ class CBSTATSPULLER():
                         timeLoop8 = 0
                         for f in value6:
                             whatBucket = x["bucket"]
-                            if key6 in self.oneTimeLog and timeLoop1 == 0:
+                            if key6 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key6 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key6 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop8]) + " cb=" + whatBucket + " " + str(key7) + "=" + str(
                                 f) + '\n'
@@ -323,9 +343,9 @@ class CBSTATSPULLER():
                         timeLoop9 = 0
                         for g in value7:
                             whatBucket = x["bucket"]
-                            if key8 in self.oneTimeLog and timeLoop1 == 0:
+                            if key8 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key8 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key8 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop9]) + " cb=" + whatBucket + " " + str(key8) + "=" + str(
                                 g) + '\n'
@@ -341,9 +361,9 @@ class CBSTATSPULLER():
                         timeLoop10 = 0
                         for g in value8:
                             whatBucket = x["bucket"]
-                            if key9 in self.oneTimeLog and timeLoop1 == 0:
+                            if key9 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key9 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key9 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop10]) + " cb=" + whatBucket + " " + str(key9) + "=" + str(
                                 g) + '\n'
@@ -353,16 +373,16 @@ class CBSTATSPULLER():
                             timeLoop10 = 0
 
             # Analytics FOR BUCKET
-            if self.logElements["analytics"] == True:
+            if self.logElements["analytics4Bucket"] == True:
                 if "@cbas-" + bucketName in x["stats"]:
                     x["stats"]["@cbas-" + bucketName].pop("timestamp")
                     for key10, value9 in x["stats"]["@cbas-" + bucketName].items():
                         timeLoop11 = 0
                         for g in value9:
                             whatBucket = x["bucket"]
-                            if key10 in self.oneTimeLog and timeLoop1 == 0:
+                            if key10 in self.oneTimeLogSys and timeLoop1 == 0:
                                 whatBucket = 'sys'  # only do system level logging once
-                            elif key10 in self.oneTimeLog and timeLoop1 > 0:
+                            elif key10 in self.oneTimeLogSys and timeLoop1 > 0:
                                 continue
                             log_string = str(unixTodt_trim[timeLoop11]) + " cb=" + whatBucket + " " + str(key10) + "=" + str(
                                 g) + '\n'
@@ -370,7 +390,32 @@ class CBSTATSPULLER():
                             fullLogString = fullLogString + log_string
                         else:
                             timeLoop11 = 0
-            timeLoop1 = 1
+
+            # Analytics FOR cluster
+            if self.logElements["analytics"] == True:
+                if "@cbas" in x["stats"]:
+                    x["stats"]["@cbas"].pop("timestamp")
+                    for key11, value10 in x["stats"]["@cbas-" + bucketName].items():
+                        timeLoop12 = 0
+                        for h in value10:
+                            whatBucket = x["bucket"]
+                            if key11 in self.oneTimeLogAnalytics and timeLoop1 == 0:
+                                if key11 in self.oneTimeLogSys and timeLoop1 == 0:
+                                    whatBucket = 'sys'  # only do system level logging once
+                                elif key11 in self.oneTimeLogSys and timeLoop1 > 0:
+                                    continue
+                                log_string = str(unixTodt_trim[timeLoop12]) + " cb=sys " + str(key11) + "=" + str(
+                                    g) + '\n'
+                                timeLoop12 = timeLoop12 + 1
+                                fullLogString = fullLogString + log_string
+                            elif key5 in self.oneTimeLogAnalytics and timeLoop1 > 0:
+                                continue
+                        else:
+                            timeLoop12 = 0
+
+
+
+            timeLoop1 = 1 ## this is the counter for after the first time making all the sys stats for a cluster
         self.writeLog(fullLogString)
         return True
 
