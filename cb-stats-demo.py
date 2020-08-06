@@ -8,42 +8,6 @@ import os
 import pstats
 import io
 
-
-# import sys
-#import cProfile
-'''
-def profile(fnc):
-    
-    """A decorator that uses cProfile to profile a function"""
-    
-    def inner(*args, **kwargs):
-        
-        pr = cProfile.Profile()
-        pr.enable()
-        retval = fnc(*args, **kwargs)
-        pr.disable()
-        s = io.StringIO()
-        sortby = 'cumulative'
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-        print(s.getvalue())
-        return retval
-
-    return inner
-
-def profile(func):
-    def profiled_func(*args, **kwargs):
-        profile = cProfile.Profile()
-        try:
-            profile.enable()
-            result = func(*args, **kwargs)
-            profile.disable()
-            return result
-        finally:
-            profile.print_stats()
-    return profiled_func
-'''
-
 class CBSTATSPULLER():
     hostname = '127.0.0.1'
     port = '8091'
@@ -114,23 +78,6 @@ class CBSTATSPULLER():
 
         '''--------Common Methods END---------'''
 
-    def pullCbBuckets(self):
-        url = self.secure + "://" + self.hostname + ":" + self.port + "/pools/default/buckets/"
-        if self.debug == True:
-            print("DEBUG: ", url)
-
-        data = self.httpGet(url)
-
-        if data == False or None:
-            now = time.strftime(self.defaultDtFormat)
-            data = now + " error=could not get stats \n"
-            self.writeLog(data)
-            return False
-
-        if self.debug == True:
-            print("DEBUG: ", data)
-        return data
-
     def bucketsList(self):
         url = self.secure + "://" + self.hostname + ":" + self.port + "/pools/default/buckets?basic_stats=true&skipMap=true"
         data = self.httpGet(url)
@@ -142,7 +89,6 @@ class CBSTATSPULLER():
         return bucket
 
     def pullCbStatus(self,bucket="default"):
-        ''' http://127.0.0.1:8091/_uistats?bucket=todo&haveTStamp={"todo":1499910229945,"@system":1499910229945,"@fts":1499910229945,"@fts-todo":1499910229945,"@index":1499910229945,"@index-todo":1499910229945,"@query":1499910229945,"@xdcr-todo":0}&zoom=minute' '''
         url = self.secure + "://" + self.hostname + ":" + self.port + "/_uistats?bucket=" + bucket + "&zoom=minute"
         if self.debug == True:
             print("DEBUG: ", url)
@@ -162,7 +108,6 @@ class CBSTATSPULLER():
             print("DEBUG: BucketList ", cbList)
 
         if cbList > 0:
-
             if self.debug == True:
                 print("DEBUG: Making bucket logs ")
             for bucketName in cbList:
