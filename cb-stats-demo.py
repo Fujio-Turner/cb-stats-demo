@@ -112,8 +112,7 @@ class CBSTATSPULLER():
     def jsonChecker(self, data=''):
         # checks if its good json and if so return back Python Dictionary
         try:
-            checkedData = json.loads(data)
-            return checkedData
+            return json.loads(data)
         except Exception, e:
             return False
 
@@ -130,7 +129,7 @@ class CBSTATSPULLER():
         data = self.httpGet(url)
 
         if data == False or None:
-            now = time.strftime("%Y-%m-%d %H:%M:%S")
+            now = time.strftime(self.defaultDtFormat)
             data = now + " error=could not get stats \n"
             self.writeLog(data)
             return False
@@ -196,7 +195,7 @@ class CBSTATSPULLER():
 
             x["stats"]["@system"].pop("timestamp")  # removes the field timestamp 
 
-            # kV
+            # kV FOR CLUSTER
             if self.logElements["kv"] == True:
                 kvBucketName = "@kv-" + bucketName
                 if kvBucketName in x["stats"]:
@@ -216,7 +215,7 @@ class CBSTATSPULLER():
                         else:
                             timeLoop2 = 0
 
-            # System
+            # System FOR CLUSTER
             if self.logElements["sys"] == True:
                 if "@system" in x["stats"]:
                     x["stats"]["@system"].pop("timestamp")
@@ -235,7 +234,7 @@ class CBSTATSPULLER():
                         else:
                             timeLoop3 = 0
 
-            # QUERY
+            # QUERY FOR CLUSTER
             if self.logElements["query"] == True:
                 if "@query" in x["stats"]:
                     x["stats"]["@query"].pop("timestamp")
@@ -257,7 +256,7 @@ class CBSTATSPULLER():
                         else:
                             timeLoop4 = 0
 
-            # FTS
+            # FTS FOR CLUSTER
             if self.logElements["fts"] == True:
                 if "@fts" in x["stats"]:
                     x["stats"]["@fts"].pop("timestamp")
@@ -278,7 +277,7 @@ class CBSTATSPULLER():
                                 continue
                         else:
                             timeLoop5 = 0
-            # INDEX
+            # INDEX FOR CLUSTER
             if self.logElements["index"] == True:
                 if "@index" in x["stats"]:
                     x["stats"]["@index"].pop("timestamp")
@@ -391,7 +390,7 @@ class CBSTATSPULLER():
                         else:
                             timeLoop11 = 0
 
-            # Analytics FOR cluster
+            # Analytics FOR CLUSTER
             if self.logElements["analytics"] == True:
                 if "@cbas" in x["stats"]:
                     x["stats"]["@cbas"].pop("timestamp")
