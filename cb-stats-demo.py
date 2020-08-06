@@ -59,7 +59,7 @@ class CBSTATSPULLER():
     oneTimeLogQuery = ["query_warnings","query_request_time","query_result_count","query_selects","query_requests_500ms","query_active_requests","query_requests_5000ms","query_requests_1000ms","query_invalid_requests","query_queued_requests","query_avg_svc_time","query_errors","query_requests","query_avg_response_size","query_result_size","query_avg_req_time","query_requests_250ms"]
     oneTimeLogFts = ["fts_total_queries_rejected_by_herder","fts_curr_batches_blocked_by_herder","fts_num_bytes_used_ram"]
     oneTimeLogAnalytics = ["cbas_disk_used","cbas_gc_time","cbas_thread_count","cbas_gc_count","cbas_heap_used","cbas_system_load_average"]
-    logElements = {"query":True,"index":True,"sys":False,"kv":True,"xdcr":True,"fts":True,"eventing":True,"analytics":True,"analytics4Bucket":True}
+    logElements = {"query":True,"index":True,"sys":True,"kv":True,"xdcr":True,"fts":True,"eventing":True,"analytics":True,"analytics4Bucket":True}
 
     def __init__(self, config):
         self.hostname = config["hostname"]
