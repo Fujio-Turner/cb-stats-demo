@@ -1,7 +1,7 @@
 {
 "hostname":"127.0.0.1",
 "username":"Administrator",
-"password":"fujiofujio",
+"password":"password",
 "path":"/Users/fujioturner/Documents/",
 "dtFormat":"%Y-%m-%d %H:%M:%Sz",
 "debug":false,
