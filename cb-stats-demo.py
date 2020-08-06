@@ -54,7 +54,6 @@ class CBSTATSPULLER():
     defaultDtFormat = "%Y-%m-%d %H:%M:%S"
     logFile = None
     logElements = {"@query":True,"@index":True,"@indexBucket":True,"@system":True,"@kvBucket":True,"@xdcrBucket":True,"@ftsBucket":True,"@fts":True,"@eventing":True,"@cbasBucket":True,"@cbas":True}
->>>>>>> issue/#10
 
     def __init__(self, config):
         self.hostname = config["hostname"]
