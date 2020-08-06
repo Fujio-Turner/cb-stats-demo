@@ -1,8 +1,8 @@
 {
 "hostname":"127.0.0.1",
 "username":"Administrator",
-"password":"fujiofujio",
-"path":"/Users/fujioturner/Documents/demo/cb-stats-demo/",
+"password":"password",
+"path":"/Users/fujioturner/Documents/",
 "dtFormat":"%Y-%m-%d %H:%M:%Sz",
 "debug":false,
 "port":"8091",
