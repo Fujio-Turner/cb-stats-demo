@@ -12,6 +12,8 @@ class CBSTATSPULLER():
     hostname = '127.0.0.1'
     port = '8091'
     debug = False
+    cbNodeNameCheck = ""
+    cbNodeName = []
     username = "read-only"
     password = "password"
     logPath = "/tmp/logs/"
@@ -26,6 +28,7 @@ class CBSTATSPULLER():
         self.password = config["password"]
         self.logPath = config["path"]
         self.defaultDtFormat = config["dtFormat"]
+        self.cbNodeNameCheck = config["node"]
         if config["secure"] == True:
             self.secure = "https"
         else:
@@ -34,8 +37,17 @@ class CBSTATSPULLER():
             self.debug = True
         else:
             self.debug = False
+        self.nodeNameChecker()
 
         '''--------Common Methods BEGIN---------'''
+    def nodeNameChecker(self):
+        if type(self.cbNodeNameCheck) == unicode:
+            if len(self.cbNodeNameCheck) > 0:
+                self.cbNodeName.append(self.cbNodeNameCheck+":"+self.port) 
+            else:
+                self.cbNodeName =[]
+        else:
+            self.cbNodeName =[]
 
     def httpGet(self, url='', retry=0):
         try:
@@ -89,7 +101,12 @@ class CBSTATSPULLER():
         return bucket
 
     def pullCbStatus(self,bucket="default"):
-        url = self.secure + "://" + self.hostname + ":" + self.port + "/_uistats?bucket=" + bucket + "&zoom=minute"
+        nodeLooking = ""
+
+        if len(self.cbNodeName) > 0:  #whole cluster or single node stats
+            nodeLooking = "&node="+self.cbNodeName[0]
+
+        url = self.secure + "://" + self.hostname + ":" + self.port + "/_uistats?bucket=" + bucket + nodeLooking +"&zoom=minute"
         if self.debug == True:
             print("DEBUG: ", url)
         data = self.httpGet(url)
@@ -129,7 +146,7 @@ class CBSTATSPULLER():
 
     def StatsB(self,bucketName,data):
         for key , value in data.items():
-            dType = key.split("-")
+            dType = key.split("-",1)
             if len(dType)>1 and dType[1] == bucketName:
                 if self.logElements[dType[0]+"Bucket"] == True:
                     timeStamp = data[key]["timestamp"]
@@ -143,7 +160,7 @@ class CBSTATSPULLER():
 
     def StatsC(self,data):
         for key , value in data.items():
-            dType = key.split("-")
+            dType = key.split("-",1)
             if len(dType) == 1 :
                 if self.logElements[dType[0]] == True:
                     timeStamp = data[key]["timestamp"]

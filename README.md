@@ -12,7 +12,8 @@ Open the config.json file and update your settings.
 ```javascript
 
 {
-"hostname":"127.0.0.1",   (Put in your hostname or ip of the machine it getting the stats from)
+"node":"9.9.9.9",   	  (Put in hostname or ip of the node for its stats or "" for the whole cluster)
+"hostname":"127.0.0.1",   (Put in hostname or ip of a node in the cluster)
 "username":"readOnly",    (Put in the read-only username)
 "password":"password",    (Put in the read-only password)
 "path":"/path/you/want/cb-stats-demo/to/write/output(log)/",
