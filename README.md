@@ -31,8 +31,8 @@ Insert into your cron tab
 
 DateTime Output Format
 
-By default the DateTime format output looks like this: 2020-08-05 19:23:10  or [%Y-%m-%d %H:%M:%S].
-If you want the output a little different go here: https://strftime.org/ and update the config file "dtFormat":"here"
+By default the DateTime format output looks like this: 2020-08-05 19:23:10  or "%Y-%m-%d %H:%M:%S".
+If you want the time output a little different go here: https://strftime.org/ and update the config.json file "dtFormat":"here"
 
 **LOGS**
 
@@ -43,7 +43,7 @@ If you want the output a little different go here: https://strftime.org/ and upd
 
 Q:How big will the files/log get?
 
-A:It will roughly get about 750KB per minute per bucket per server or about 0.8GB per day per bucket per server. More CB servies your have running like: N1QL , Eventing, Analytic and ...etc will make the file bigger.
+A:It will roughly get about 750KB per minute per bucket per server or about 0.8GB per day per bucket per server. The more CB servies you are running like: N1QL , Eventing, Analytic and ...etc the bigger the file.
 
 
 Q:Will the file size grow forever?
@@ -73,4 +73,9 @@ Q:Can I collect all the stats for the whole cluster on one machine?
 Q:You can, but its best to run the script on each machine to capture its local stats and have a logging agent consume the logs and send them to a third party tool.
 
 
-Compatability: Couchbase Admin GUI System stats ,example CPU, is now treated in the admin gui as a CB service with the data been as "@system" much like @analytics @query . If you have an older version of CB 4.x or older please pull/download the branch  cb/4.x.
+Compatability: CB 6.5.x
+
+For CB 6.0.x - Use Branch: 6.0.x
+For CB 5.x   - Use Branch: cb/4.x
+
+Couchbase Admin GUI System stats ,example CPU, is now treated in the admin gui as a CB service with the data been as "@system" much like @analytics @query . If you have an older version of CB 4.x or older please pull/download the branch  cb/4.x.
